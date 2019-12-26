@@ -1,2 +1,2 @@
-# pat-exercises
-some self-written pat answers
+# oj-problems
+这个仓库是我做过的一些oj题目，对于逻辑稍微复杂的题目，在代码以外还会给出我的分析过程。
