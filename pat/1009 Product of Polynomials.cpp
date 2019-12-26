@@ -45,6 +45,5 @@ int main() {
 	cout << mergeResult.size();
 	for (auto plyIter = mergeResult.begin(); plyIter != mergeResult.end(); plyIter++)
 		printf(" %d %.1f", plyIter->N, plyIter->an);
-	system("pause");
 	return 0;
 }
