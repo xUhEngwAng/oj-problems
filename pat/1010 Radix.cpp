@@ -19,9 +19,9 @@ string add(string m, string n){
     int carry = 0, mlen, nlen, one, two, curr;
     mlen = m.length();
     nlen = n.length();
-    for(int ix = m - 1, jx = n - 1; ix >= 0 || jx >= 0; --ix, --jx){
+    for(int ix = mlen - 1, jx = nlen - 1; ix >= 0 || jx >= 0; --ix, --jx){
         one = (ix >= 0? m[ix] - '0': 0);
-        two = (jx >= 0? n[ix] - '0': 0);
+        two = (jx >= 0? n[jx] - '0': 0);
         curr = one + two + carry;
         if(curr >= 10){
             curr -= 10;
@@ -35,6 +35,7 @@ string add(string m, string n){
 }
 
 string multiply_onedigit(string m, int count){
+	//assert(0 <= count < 10);
     string res;
     while(count--){
         res = add(res, m);
@@ -45,8 +46,8 @@ string multiply_onedigit(string m, int count){
 string multiply(string m, string n){
     string res, curr;
     int ix = 0;
-    for(char ch : n){
-        curr = multiply_onedigit(m, ch - '0');
+	for (auto it = n.rbegin(); it != n.rend(); ++it) {
+        curr = multiply_onedigit(m, *it - '0');
         for(int jx = 0; jx < ix; ++jx)
             curr.push_back('0');
         res = add(res, curr);
@@ -116,10 +117,11 @@ int main(){
             cout << ix << endl;
             break;
         }
-        if(decimal2 > decimal1){
+        if(decimal2.length() > decimal1.length()){
             cout << "Impossible" << endl;
             break;
         }
     }
+	system("pause");
     return 0;
 }
