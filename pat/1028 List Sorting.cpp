@@ -1,58 +1,70 @@
+#include <algorithm>
+#include <cstdio>
+#include <cstring>
 #include <vector>
-#include <string>
-#include <iostream>
+
 using namespace std;
-struct stu {
-	string stuid;
-	string stuname;
-	int    score;
+
+/*
+ * 本题看似简单，然而在实现过程中仍然遇到了一些问题。
+ * 1. C style字符串的处理很不熟悉，中间字符串的比较直接就用了
+ *    比较运算符，然后 strcpy 的参数顺序也忘了，应该是把后面
+ *    的拷贝到前面的。
+ * 2. 犯了一个低级错误，vector<entry> datas(N); 这样直接就
+ *    调用默认构造函数创建了 N 个对象了，后面就不能用 emplace_back
+ *    而应该修改已创建的对象。
+ * 3. 忘了怎么声明一个函数指针，然后分别给它赋 cmp1, cmp2, cmp3
+ *    值来简化代码。
+ */
+
+struct entry{
+	char id[7];
+	char name[9];
+	int score;
+
+	entry() = default;
+	entry(char i[7], char n[9], int s){
+        strcpy(id, i);
+        strcpy(name, n);
+        score = s;
+	}
 };
-int main() {
-	int N, mode;
-	scanf("%d %d", &N, &mode);
-	vector<stu> stuVec(N);
-	for (auto stuIt = stuVec.begin(); stuIt != stuVec.end(); stuIt++) {
-		cin >> stuIt->stuid >> stuIt->stuname >> stuIt->score;
-	}
-	vector<stu>::iterator maxpos;
-	stu tmp;
-	switch (mode) {
-	case 1: // selective sort by stuid
-		for (auto stuIt = stuVec.begin(); stuIt != stuVec.end() - 1; stuIt++) {
-			maxpos = stuIt;
-			for (auto localIt = stuIt + 1; localIt != stuVec.end(); localIt++)
-				if (localIt->stuid < maxpos->stuid) maxpos = localIt;
-			tmp = *stuIt;
-			*stuIt = *maxpos;
-			*maxpos = tmp;
-		}
-		break;
-	case 2:
-		for (auto stuIt = stuVec.begin(); stuIt != stuVec.end() - 1; stuIt++) {
-			maxpos = stuIt;
-			for (auto localIt = stuIt + 1; localIt != stuVec.end(); localIt++)
-				if (localIt->stuname < maxpos->stuname) maxpos = localIt;
-			tmp = *stuIt;
-			*stuIt = *maxpos;
-			*maxpos = tmp;
-		}
-		break;
-	case 3:
-		for (auto stuIt = stuVec.begin(); stuIt != stuVec.end() - 1; stuIt++) {
-			maxpos = stuIt;
-			for (auto localIt = stuIt + 1; localIt != stuVec.end(); localIt++)
-				if (localIt->score < maxpos->score) maxpos = localIt;
-			tmp = *stuIt;
-			*stuIt = *maxpos;
-			*maxpos = tmp;
-		}
-		break;
-	}
-	for (auto stuIt = stuVec.begin(); stuIt != stuVec.end(); stuIt++) {
-		//printf("%s %s %d\n", stuIt->stuid, stuIt->stuname, stuIt->score);
-		cout << stuIt->stuid << ' '<< stuIt->stuname << ' ' << stuIt->score << endl;
+
+bool cmp1(entry one, entry two){
+	return strcmp(one.id, two.id) < 0;
+}
+
+bool cmp2(entry one, entry two){
+	if(strcmp(one.name, two.name) != 0)
+        return strcmp(one.name, two.name) < 0;
+	return strcmp(one.id, two.id) < 0;
+}
+
+bool cmp3(entry one, entry two){
+	if(one.score != two.score)
+        return one.score < two.score;
+	return strcmp(one.id, two.id) < 0;
+}
+
+int main(){
+	int N, C;
+	scanf("%d %d", &N, &C);
+	vector<entry> datas;
+	datas.reserve(N);
+	char id[7], name[8];
+	int score;
+	for(int ix = 0; ix != N; ++ix){
+		scanf("%s %s %d", id, name, &score);
+		datas.emplace_back(id, name, score);
 	}
 
-	system("pause");
+	bool (*cmp)(entry, entry);
+	if(C == 1) cmp = cmp1;
+	else if(C == 2) cmp = cmp2;
+	else       cmp = cmp3;
+	sort(datas.begin(), datas.end(), cmp);
+
+	for(auto e : datas)
+		printf("%s %s %d\n", e.id, e.name, e.score);
 	return 0;
 }
