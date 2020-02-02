@@ -3,6 +3,16 @@
 #include <cstdio>
 using namespace std;
 
+/*
+ * 这个题我做的也是够复杂的，开了好多个 vector。但是这里主要
+ * 还是说明一下题意。
+ * 一开始我是没能理解第三行输入的 order 是什么意思，还以为是
+ * ix 第 order[ix] 个比赛，但是应该注意到 order[ix] 是可以
+ * 等于零的，所以我的理解恰好反了。应该是 order[ix] 第 ix + 1
+ * 个比赛才是（ix = 0, 1, 2, ...）
+ * 然后在我的实现中还用了一个类似于表排序的方法，感觉还挺巧妙。
+ */
+
 vector<int> weights, fail_round;
 vector<int> winner, order, r, Rank;
 
