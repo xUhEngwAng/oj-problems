@@ -1,5 +1,12 @@
 #include <cstdio>
 
+/*
+ * 这个题本身是非常简单，但是我犯了一个非常愚蠢的错误。
+ * 题目中给出了所有节点的数目是 N，但是这 N 个节点未必
+ * 都是在链表上的，所以输出的时候，应该以计数值 count
+ * 来作为循环终止条件，而不是 N。
+ */
+
 struct node{
 	int data;
 	int next;
@@ -54,8 +61,8 @@ int main(){
 		addr = list[addr].next;
 	}
 
-	for(int ix = 0; ix < N - 1; ++ix)
+	for(int ix = 0; ix < count - 1; ++ix)
 		printf("%05d %d %05d\n", res[ix].addr, res[ix].data, res[ix + 1].addr);
-	printf("%05d %d -1\n", res[N - 1].addr, res[N - 1].data);
+	printf("%05d %d -1\n", res[count - 1].addr, res[count - 1].data);
 	return 0;
 }
