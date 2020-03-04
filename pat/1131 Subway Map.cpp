@@ -81,7 +81,7 @@ int main(){
 		printf("%d\n", path.size() - 1);
 		currline = getline(src, path[1]);
 		prev = src;
-		for(int ix = 1; ; ++ix){
+		for(int ix = 1;; ++ix){
 			curr = path[ix];
 			if(curr == dest) break;
 			nextline = getline(curr, path[ix + 1]);
