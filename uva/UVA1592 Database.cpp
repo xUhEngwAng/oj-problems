@@ -1,72 +1,63 @@
 #include <iostream>
-#include <string>
 #include <vector>
-#include <map>
-
+#include <string>
 using namespace std;
 
-string database[10000][10];
+vector<vector<string>> database;
 
-int check_row(int row1, int row2, int colSrc, int m){
-	while(colSrc < m){
-		if(database[row1][colSrc] == database[row2][colSrc])
-			return colSrc;
-		colSrc++;
+void parse(const string &str, int rownum){
+	int begin = 0, next;
+	while(true){
+		next = str.find(',', begin);
+		if(next == -1) break;
+		database[rownum].push_back(str.substr(begin, next - begin));
+		begin = next + 1;
 	}
-	return -1;
+	database[rownum].push_back(str.substr(begin));
 }
 
 int main(){
-	int m, n, pos, prev;
+	freopen("1.out", "w", stdout);
+	int m, n, cnt;
 	int row1, row2, col1, col2;
-	bool flag;
-	string currline;
-	map<string, vector<int>> mp;
-	map<string, vector<int>>::iterator it;
+	string str;
 	while(cin >> n >> m){
-		flag = true;
 		cin.ignore();
-		for(int jx = 0; jx < n; ++jx){
-			getline(cin, currline);
-			prev = 0, pos = 0;
-			for(int ix = 0; ix < m - 1; ++ix){
-				pos = currline.find(',', prev);
-				database[jx][ix] = currline.substr(prev, pos - prev);
-				cout << database[jx][ix] << " ";
-				prev = pos + 1;
-			}
-			database[jx][m - 1] = currline.substr(prev);
-			cout << database[jx][m - 1];
-			cout << endl;
+		database.clear();
+		database.resize(n);
+		for(int ix = 0; ix != n; ++ix){
+			getline(cin, str);
+			parse(str, ix);
+			/*
+			for(string s : database[ix])
+				cout << s << ' ';
+			cout << endl;*/
 		}
-		for(int ix = 0; ix < m - 1; ++ix){
-			mp.clear();
-			for(int jx = 0; jx != n; ++jx)
-				if((it = mp.find(database[jx][ix])) == mp.end())
-					mp[database[jx][ix]].push_back(jx);
-				else
-					it->second.push_back(jx);
-			for(auto p : mp){
-				if(p.second.size() == 1) continue;
-				for(int kx = 0; kx != p.second.size(); kx++)
-					for(int lx = kx + 1;lx != p.second.size(); lx++)
-						if((col2 = check_row(p.second[kx], p.second[lx], ix + 1, m)) != -1){
-							flag = false;
-							row1 = p.second[kx];
-							row2 = p.second[lx];
-							col1 = ix;
-							goto out;
-						}
+		for(int ix = 0; ix < n; ++ix)
+			for(int jx = ix + 1; jx < n; ++jx){
+				cnt = 0;
+				for(int kx = 0; kx != m; ++kx)
+					if(database[ix][kx] == database[jx][kx])
+						++cnt;
+				if(cnt >= 2){
+					row1 = ix, row2 = jx;
+					goto out;
+				}
 			}
-		}
 		out:
-		if (flag) cout << "YES" << endl;
-		else {
-			cout << "NO" << endl;
-			cout << row1 + 1 << " " << row2 + 1 << endl;
-			cout << col1 + 1 << " " << col2 + 1 << endl;
-		}
+		if(cnt < 2) printf("YES\n");
+		else{
+			cnt = 0;
+			printf("NO\n");
+			printf("%d %d\n", row1 + 1, row2 + 1);
+			for(int ix = 0; ix != m; ++ix)
+				if(database[row1][ix] == database[row2][ix]){
+					++cnt;
+					if(cnt == 1) col1 = ix;
+					if(cnt == 2) col2 = ix;
+				}
+			printf("%d %d\n", col1 + 1, col2 + 1);
+		}	
 	}
-	system("pause");
 	return 0;
 }

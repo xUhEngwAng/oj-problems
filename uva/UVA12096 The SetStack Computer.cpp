@@ -1,78 +1,67 @@
-#include <iostream>
+#include <cstdio>
 #include <string>
 #include <stack>
+#include <map>
 #include <set>
 using namespace std;
 
-void uni(stack<set<string>>& s){
-    set<string> one = s.top();
-    s.pop();
-    set<string> two = s.top();
-    s.pop();
-    for(string str : one)
-        two.insert(str);
-    s.push(two);
-}
+stack<set<int>> s;
+map<string, int> m;
 
-void intersect(stack<set<string>>& s){
-    set<string> one = s.top();
-    s.pop();
-    set<string> two = s.top();
-    s.pop();
-    set<string> res;
-    for(string str : one){
-        if(two.find(str) != two.end())
-            res.insert(str);
-    }
-    s.push(res);
-}
-
-void add(stack<set<string>>& s){
-    set<string> one = s.top();
-    s.pop();
-    set<string> two = s.top();
-    s.pop();
+string tostr(const set<int> &input){
     string res = "{";
-    for(string str : one){
-        res += str;
-        res += ",";
+    for(int e : input){
+        res.push_back(e + '0');
+        res.push_back(',');
     }
-    int len = res.length();
-    if(res[len - 1] == ',')
-        res[len - 1] = '}';
-    else
-        res.push_back('}');
-    two.insert(res);
-    s.push(two);
+    return res;
 }
 
 int main(){
-	int T, N;
-	string cmd;
-	stack<set<string>> s;
-	cin >> T;
-	while(T--){
-		cin >> N;
-		for(int ix = 0; ix != N; ++ix){
-			cin >> cmd;
-            if(cmd == "PUSH")
-                s.push(set<string>());
+    int T, N, cnt, curr;
+    char input[10];
+    string hash;
+    set<int> tmp1, tmp2;
+    scanf("%d", &T);
+    while(T--){
+        scanf("%d", &N);
+        while(!s.empty()) s.pop();
+        m.clear();
+        cnt = 0;
+        while(N--){
+            scanf("%s", input);
+            if(input[0] == 'P') s.push(set<int>());
             else
-            if(cmd == "DUP")
-                s.push(s.top());
-            else
-            if(cmd == "UNION")
-                uni(s);
-            else
-            if(cmd == "INTERSECT")
-                intersect(s);
-            else
-                add(s);
-			cout << s.top().size() << endl;
-		}
-		cout << "***" << endl;
-	}
-	return 0;
+            if(input[0] == 'D') s.push(s.top());
+            else{
+                tmp1 = s.top();
+                s.pop();
+                tmp2 = s.top();
+                s.pop();
+                if(input[0] == 'U'){
+                    for(int e : tmp2)
+                        tmp1.insert(e);
+                    s.push(tmp1);
+                }
+                else
+                if(input[0] == 'I'){
+                    for(int e : tmp1)
+                        if(tmp2.find(e) == tmp2.end())
+                            tmp1.erase(e);
+                    s.push(tmp1);
+                }
+                else{
+                    hash = tostr(tmp1);
+                    if(m.find(hash) == m.end())
+                        m[hash] = cnt++;
+                    curr = m[hash];
+                    tmp2.insert(curr);
+                    s.push(tmp2);
+                }
+            }
+            printf("%d\n", s.top().size());
+        }
+        printf("***\n");
+    }
+    return 0;
 }
-
-
