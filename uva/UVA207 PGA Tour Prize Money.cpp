@@ -1,108 +1,126 @@
 #include <iostream>
+#include <iomanip>
 #include <string>
+#include <vector>
 #include <algorithm>
 using namespace std;
 
-void printHeader();
-void printInfo(int num);
-void computePrize(int num);
-int  parseEntry(string entry, int pos);
+struct player{
+	string name;
+	int score[4];
+	int total = 0;
+	int round_finished = 0;
+};
 
-bool cutCmp(const Player& one, const Player& two){
-	return one.cutScore > two.cutScore;
+float percent[70];
+vector<player> table;
+
+bool cmp1(const player &one, const player &two){
+	return one.score[0] + one.score[1] < two.score[0] + two.score[1];
 }
 
-bool prizeCmp(const Player& one, const Player& two){
-	if(one.roundComplete != two.roundComplete)
-		return one.roundComplete > two.roundComplete;
+bool cmp2(const player &one, const player &two){
+	if(one.round_finished != two.round_finished)
+		return one.round_finished > two.round_finished;
 	if(one.total != two.total)
-		return one.total > two.total;
+		return one.total < two.total;
 	return one.name < two.name;
 }
 
-enum Status{AMATEUR, PROFESSION};
+void parse(const string &line){
+	player tmp;
+	string name = line.substr(0, 20);
+	while(name.back() == ' ') name.pop_back();
+	tmp.name = name;
+	string score;
+	for(int ix = 21, cnt = 0; ix <= 30; ix += 3, cnt++){
+		score = line.substr(ix, 3);
+		if(score[0] == 'D') break;
+		tmp.score[cnt] = stoi(score);
+		tmp.round_finished++;
+		tmp.total += tmp.score[cnt];
+	}
+	if(tmp.round_finished >= 2)
+		table.push_back(tmp);
+}
 
-struct Player{
-	string name, rank;
-	Status status;
-	int roundComplete;
-	int rd1, rd2, rd3, rd4, total, cutScore;
-	bool hasPrize;
-	float prize;
-};
-
-float percentage[70], purse;
-Player players[144];
+void printHeader(){
+	cout << "Player Name          Place     RD1  RD2  RD3  RD4  TOTAL     Money Won" << endl;
+	cout << "-----------------------------------------------------------------------" << endl;
+}
 
 int main(){
-	int cases, nplayers, pos, cutNum;
-	string entry;
-	cin >> cases;
-	cin.ignore();
-	while(cases--){
-		getline(cin, entry);
-		cin >> purse;
+	freopen("1.out", "w", stdout);
+	int t, num, score, ix, jx;
+	float total_prize, prize_ratio;
+	float curr_prize;
+	int prize_rank, tie_cnt;
+	string line, rank;
+	cin >> t;
+	while(t--){
+		cin >> total_prize;
 		for(int ix = 0; ix != 70; ++ix)
-			cin >> percentage[ix];
-		cin >> nplayers;
-		pos = 0;
-		for(int ix = 0; ix != nplayers; ++ix){
-			getline(cin, entry);
-			pos = parseEntry(entry, pos);
+			cin >> percent[ix];
+		cin >> num;
+		cin.ignore();
+		table.clear();
+		for(int ix = 0; ix != num; ++ix){
+			getline(cin, line);
+			parse(line);
 		}
-
-		sort(players, players + pos, cutCmp);
-		cutNum = 70;
-		while(cutNum < pos && players[cutNum]==players[cutNum - 1])
-			++cutNum;
-
-		sort(players, players + cutNum, prizeCmp);
-		computePrize(cutNum);
-		printInfo(cutNum);
+		sort(table.begin(), table.end(), cmp1);
+		if(table.size() >= 70){
+			score = table[69].score[0] + table[69].score[1];
+			for(num = 70; num < table.size(); ++num)
+				if(table[num].score[0] + table[num].score[1] > score)
+					break;
+			table.resize(num);
+		}
+		sort(table.begin(), table.end(), cmp2);
+		prize_rank = 0;
+		num = table.size();
+		while(table[num - 1].round_finished != 4) --num;
+		printHeader();
+		for(ix = 0; ix != num; ){
+			tie_cnt = 0;
+			prize_ratio = 0;
+			for(jx = ix; jx != num; ++jx){
+				if(table[jx].total > table[ix].total) break;
+				if(table[jx].name.back() != '*'){
+					++tie_cnt;
+					if(prize_rank < 70)
+						prize_ratio += percent[prize_rank++];
+				}
+			}
+			if(tie_cnt != 0)
+				curr_prize = total_prize * prize_ratio / (tie_cnt * 100);
+			for(int kx = ix; kx != jx; ++kx){
+				cout << std::left << setw(21) << table[kx].name;
+				rank = to_string(ix + 1);
+				if(table[kx].name.back() != '*' && tie_cnt >= 2) 
+					rank.push_back('T');
+				cout << setw(10) << rank;
+				for(int i = 0; i != 4; ++i)
+					cout << std::left << setw(5) << table[kx].score[i];
+				cout << std::left << setw(10) << table[kx].total;
+				if(table[kx].name.back() != '*'){
+					cout << '$';
+					cout << std::right << setw(9) << fixed << setprecision(2) << curr_prize;
+				}
+				cout << endl;
+			}
+			ix = jx;
+		}
+		for(ix = num; ix != table.size(); ++ix){
+			cout << std::left << setw(21) << table[ix].name;
+			cout << setw(10) << ' ';
+			for(int i = 0; i != table[ix].round_finished; ++i)
+				cout << std::left << setw(5) << table[ix].score[i];
+			for(int i = table[ix].round_finished; i != 4; ++i)
+				cout << setw(5) << ' ';
+			cout << "DQ" << endl;
+		}
+		if(t != 0) cout << endl;
 	}
 	return 0;
-}
-
-void printInfo(int num){
-	printHeader();
-	Player curr;
-
-	for(int ix = 0; ix != num; ++ix){
-		curr = players[ix];
-		cout << curr.name;
-
-	}
-}
-
-void computePrize(int num){
-	int prevTotal = 0, jx, rank, prizeRank = 0, prevCount
-	float percent;
-	for(int ix = 0; ix < num && prizeRank < 70; ){
-		prevTotal = players[ix].total;
-		percent   = 0;
-		prizeCount = 0;
-		for(jx = ix; jx < num; ++jx){
-			if(players[jx].total != prevTotal)
-				break;
-			if(players[jx].status != AMATEUR){
-				percent += percentage[prizeRank++];
-				prizeCount++;
-			}
-		}
-		rank = ix + 1;
-		if(prizeCount != 0) 
-			percent = percent / prizeCount;
-		while(ix < jx){
-			players[ix].rank = to_string(rank);
-			if(players[ix].status == AMATEUR){
-				players[ix].hasPrize = false;
-			}else{
-				if(prizeCount > 1) 
-					players[ix].rank.push_back('T');
-				players[ix].prize = purse * percent;
-				players[ix].hasPrize = true;
-			}
-			++ix;
-		}
-	}
 }

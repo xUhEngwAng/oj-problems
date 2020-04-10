@@ -1,181 +1,119 @@
-#include <iostream>
-#include <algorithm>
+#include <cstdio>
 #include <vector>
-#include <string>
-#include <stack>
 using namespace std;
 
-#define NEWVERSION
-
-#ifdef NEWVERSION
-
-#define POS(X)        (blocks_pos[X])
-#define dest_tower    (towers[POS(dest)])
-#define src_tower     (towers[POS(src)])
-
-int main(){
-	int n;
-	cin >> n;
-	cin.ignore();
-	vector<int> blocks_pos(n);
-	for(int ix = 0; ix != n; ++ix)
-		blocks_pos[ix] = ix;
-	vector<vector<int>> towers(n);
-	for(int ix = 0; ix != n; ++ix)
-		towers[ix].push_back(ix);
-
-	string cmd, op1, op2;
-	int src, dest, curr;
-	stack<int> s;
-	while(true){
-		getline(cin, cmd);
-		op1  = cmd.substr(0, 4);
-		if(op1 == "quit") break;
-		op2  = cmd.substr(7, 4);
-		src  = cmd[5] - '0';
-		dest = cmd[12] - '0';
-
-		if(POS(src) == POS(dest)) continue;
-
-		if(op2 == "onto"){
-			while ((curr = dest_tower.back()) != dest) {
-				POS(curr) = curr;
-				towers[curr].push_back(curr);
-				dest_tower.pop_back();
-			}
-		}
-
-		if(op1 == "move"){
-			while ((curr = src_tower.back()) != src) {
-				POS(curr) = curr;
-				towers[curr].push_back(curr);
-				src_tower.pop_back();
-			}
-			dest_tower.push_back(src);
-			src_tower.pop_back();
-			POS(src) = POS(dest);
-		}
-		else{//op1 == "pile"
-			while((curr = src_tower.back()) != src){
-				s.push(curr);
-				src_tower.pop_back();
-				POS(curr) = POS(dest);
-			}
-			s.push(src);
-			src_tower.pop_back();
-			POS(src) = POS(dest);
-			while(!s.empty()){
-				dest_tower.push_back(s.top());
-				s.pop();
-			}
-		}
-	}
-	for(int ix = 0; ix != n; ++ix){
-		cout << endl;
-		cout << ix << ':';
-		for(int block : towers[ix])
-			cout << ' ' << block;
-	}
-	cout << endl << endl;
-	int count = 0;
-	for(int pos : blocks_pos)
-        cout << count++ << ": " << pos << endl;
-	system("pause");
-	return 0;
-}
-
-#else
-
-class tower{
-public:
-	int pos;
-	vector<int> blocks;
-};
-
-int main(){
-	int n;
-	cin >> n;
-	cin.ignore();
-	vector<tower> towers(n);
-	for(int ix = 0; ix != n; ++ix){
-		towers[ix].pos = ix;
-		towers[ix].blocks.push_back(ix);
-	}
-
-	string cmd, op1, op2;
-	int src, dest, src_tower(src), dest_tower(dest), num, curr;
-	vector<int>::iterator src_block, dest_block;
-	while(true){
-		//parse command
-		getline(cin, cmd);
-		op1  = cmd.substr(0, 4);
-		if(op1 == "quit") break;
-		op2  = cmd.substr(7, 4);
-		src  = cmd[5] - '0';
-		dest = cmd[12] - '0';
-
-		src_tower(src) = towers[src].pos;
-		dest_tower(dest) = towers[dest].pos;
-		if(src_tower(src) == dest_tower(dest)) continue;
-		src_block  = find(towers[src_tower(src)].blocks.begin(), towers[src_tower(src)].blocks.end(), src);
-		dest_block = find(towers[dest_tower(dest)].blocks.begin(), towers[dest_tower(dest)].blocks.end(), dest);
-
-		if(op1 == "move"){
-            num = towers[src_tower(src)].blocks.end() - src_block - 1;
-			while(num--){
-                curr = towers[src_tower(src)].blocks.back();
-				towers[curr].blocks.push_back(curr);
-				towers[curr].pos = curr;
-                towers[src_tower(src)].blocks.pop_back();
-			}
-		}
-		if(op2 == "onto"){
-            num = towers[dest_tower(dest)].blocks.end() - dest_block - 1;
-			while(num--){
-			    curr = towers[dest_tower(dest)].blocks.back();
-				towers[curr].blocks.push_back(curr);
-				towers[curr].pos = curr;
-				towers[dest_tower(dest)].blocks.pop_back();
-			}
-		}
-		if(op1 == "move"){
-            towers[dest_tower(dest)].blocks.push_back(src);
-            towers[src].pos = dest_tower(dest);
-            towers[src_tower(src)].blocks.pop_back();
-		}
-		else{
-            for(auto it = src_block; it != towers[src_tower(src)].blocks.end(); ++it){
-                towers[dest_tower(dest)].blocks.push_back(*it);
-                towers[*it].pos = dest_tower(dest);
-            }
-            num = towers[src_tower(src)].blocks.end() - src_block;
-            while(num--)
-                towers[src_tower(src)].blocks.pop_back();
-		}
-	}
-
-	cout << "0:";
-	for(auto it = towers[0].blocks.begin(); it != towers[0].blocks.end(); ++it)
-        cout << ' ' << *it;
-	for(int ix = 1; ix != n; ++ix){
-        cout << endl;
-		cout << ix << ':';
-		for(auto it = towers[ix].blocks.begin(); it != towers[ix].blocks.end(); ++it)
-			cout << ' ' << *it;
-	}
-	return 0;
-}
-#endif
 /*
-10
-move 1 over 0
-move 3 onto 2
-move 5 over 4
-pile 7 onto 6
-pile 9 over 8
-pile 2 over 0
-pile 6 onto 4
-move 8 over 0
-move 4 onto 0
-quit
-*/
+ * 这就是一个简单模拟题，也不知道我当初为什么做了好久都是
+ * RE。整体思路的话就搞个 vector<vector<int>> 来模拟这里
+ * 的一堆方块，利用一个向量来记录每一个块所在的位置。
+ *
+ * 此后就是分别实现四个操作就可以了，我这里是分别写了四个
+ * 函数，虽然代码长了点，但是结构非常规整，所有四个操作
+ * 也有共通之处，完成一个函数另外三个就可以迅速完成了。
+ * 相较之下，我当初是都写在 main 里面的，非常纠结，debug
+ * 起来想必是有一些困难。
+ *
+ * 这里四个函数的实现也有大量的冗余，比如将某个块上的其他
+ * 块清空可以另写一个函数 clear_above，这样代码可以更加
+ * 简练。
+ */
+
+vector<vector<int>> tower;
+vector<int> pos;
+
+void move_onto(int one, int two){
+	int pos1 = pos[one], pos2 = pos[two];
+	if(pos1 == pos2) return;
+	int curr;
+	while(tower[pos1].back() != one){
+		curr = tower[pos1].back();
+		tower[curr].push_back(curr);
+		pos[curr] = curr;
+		tower[pos1].pop_back();
+	}
+	while(tower[pos2].back() != two){
+		curr = tower[pos2].back();
+		tower[curr].push_back(curr);
+		pos[curr] = curr;
+		tower[pos2].pop_back();
+	}
+	tower[pos2].push_back(one);
+	pos[one] = pos2;
+	tower[pos1].pop_back();
+}
+
+void move_over(int one, int two){
+	int pos1 = pos[one], pos2 = pos[two];
+	if(pos1 == pos2) return;
+	int curr;
+	while(tower[pos1].back() != one){
+		curr = tower[pos1].back();
+		tower[curr].push_back(curr);
+		pos[curr] = curr;
+		tower[pos1].pop_back();
+	}
+	tower[pos2].push_back(one);
+	pos[one] = pos2;
+	tower[pos1].pop_back();
+}
+
+void pile_onto(int one, int two){
+	int pos1 = pos[one], pos2 = pos[two];
+	if(pos1 == pos2) return;
+	int curr;
+	while(tower[pos2].back() != two){
+		curr = tower[pos2].back();
+		tower[curr].push_back(curr);
+		pos[curr] = curr;
+		tower[pos2].pop_back();
+	}
+	curr = 0;
+	while(tower[pos1][curr] != one) ++curr;
+	for(int ix = curr; ix != tower[pos1].size(); ++ix){
+		tower[pos2].push_back(tower[pos1][ix]);
+		pos[tower[pos1][ix]] = pos2;
+	}
+	tower[pos1].resize(curr);
+}
+
+void pile_over(int one, int two){
+	int pos1 = pos[one], pos2 = pos[two];
+	if(pos1 == pos2) return;
+	int curr = 0;
+	while(tower[pos1][curr] != one) ++curr;
+	for(int ix = curr; ix != tower[pos1].size(); ++ix){
+		tower[pos2].push_back(tower[pos1][ix]);
+		pos[tower[pos1][ix]] = pos2;
+	}
+	tower[pos1].resize(curr);
+
+}
+
+int main(){
+	int n, one, two;
+	scanf("%d", &n);
+	tower.resize(n);
+	for(int ix = 0; ix != n; ++ix){
+		pos.push_back(ix);
+		tower[ix].push_back(ix);
+	}
+	char cmd1[4], cmd2[4];
+	while(true){
+		scanf("%s", cmd1);
+		if(cmd1[0] == 'q') break;
+		scanf("%d %s %d", &one, cmd2, &two);
+		if(cmd1[0] == 'm')
+			if(cmd2[1] == 'n') move_onto(one, two);
+			else               move_over(one, two);
+		else
+			if(cmd2[1] == 'n') pile_onto(one, two);
+			else               pile_over(one, two);
+	}
+	for(int ix = 0; ix != n; ++ix){
+		printf("%d:", ix);
+		for(int e : tower[ix])
+			printf(" %d", e);
+		printf("\n");
+	}
+	return 0;
+}
