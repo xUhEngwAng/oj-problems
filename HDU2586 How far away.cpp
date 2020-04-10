@@ -4,6 +4,12 @@
 #include <algorithm>
 using namespace std;
 
+/*
+ * 这个题是用了改进的递增法来求给定两个节点的lca，对于每一个
+ * query 的时间复杂度为 O(logN)，不过是需要 O(NlogN) 的dfs
+ * 进行预处理，保存每个节点的深度以及 2^k 步的祖先节点的信息。
+ */
+
 struct node{
 	int id;
 	int weight;
@@ -73,7 +79,6 @@ int main(){
 			scanf("%d %d", &one, &two);
 			printf("%d\n", lca(one, two));
 		}
-		//printf("\n");
 		for(int ix = 1; ix <= n; ++ix)
 			tree[ix].clear();
 	}
