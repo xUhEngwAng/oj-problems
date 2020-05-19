@@ -1,7 +1,6 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
-#include <ctime>
 #include <cstring>
 using namespace std;
 
@@ -133,13 +132,10 @@ bool lt(const string &left, const string &right){
 	return false;
 }
 
-clock_t start, finish;
-
 int main(){
 	//freopen("1.in", "r", stdin);
 	string n;
 	int m;
-	start = clock();
 	cin >> n >> m;
 	string lo = "1", mid, hi = n, curr;
 	while(lt(lo, hi)){
@@ -150,7 +146,5 @@ int main(){
 		else break;
 	}
 	cout << mid << endl;
-	finish = clock();
-	cout << double(finish - start) / CLOCKS_PER_SEC << endl;
 	return 0;
 }
