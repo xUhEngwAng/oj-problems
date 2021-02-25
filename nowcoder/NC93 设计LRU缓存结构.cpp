@@ -1,17 +1,37 @@
+#include <list>
 #include <vector>
 #include <unordered_map>
-using std::vector;
-using std::unordered_map;
-
-struct node{
-    int value;
-    int time;
-    node() = default;
-    node(int v, int t): value(v), time(t) {}
-};
+using namespace std;
 
 class Solution {
 public:
+    list<pair<int, int>> cache;
+    unordered_map<int, list<pair<int, int>>::iterator> hash;
+    
+    void set(int key, int value, int k){
+        if(hash.find(key) != hash.end()){
+            cache.erase(hash[key]);
+        }
+        cache.push_front({key, value});
+        hash[key] = cache.begin();
+        
+        if(cache.size() > k){
+            key = cache.back().first;  
+            cache.pop_back();
+            hash.erase(key);
+        }
+    }
+    
+    int get(int key){
+        if(hash.find(key) == hash.end())
+            return -1;
+        int ret = hash[key]->second;
+        cache.erase(hash[key]);
+        cache.push_front({key, ret});
+        hash[key] = cache.begin();
+        return ret;
+    }
+    
     /**
      * lru design
      * @param operators int整型vector<vector<>> the ops
@@ -20,44 +40,13 @@ public:
      */
     vector<int> LRU(vector<vector<int>>& operators, int k) {
         // write code here
-        unordered_map<int, node> cache;
-        unordered_map<int, node>::iterator pos;
         vector<int> ret;
-        int key, value, op, min;
-
-        for(int ix = 0; ix != operators.size(); ++ix){
-            auto oper = operators[ix];
-
-            if(oper.front() == 1){ // set(x, y)
-                key = oper.at(1), value = oper.at(2);
-                cache[key] = node(value, ix);
-                if(cache.size() > k){
-                    min = 0x7fffffff;
-
-                    for(auto it = cache.begin(); it != cache.end(); ++it){
-                        if(it->second.time < min) {
-                            min = it->second.time;
-                            pos = it;
-                        }
-                    }
-
-                    cache.erase(pos->first);
-                }
-            }
-
-            else
-            if(oper.front() == 2){ // get(x)
-                key = oper.at(1);
-                if(cache.find(key) == cache.end()) value = -1;
-                else{
-                    cache[key].time = ix;
-                    value = cache[key].value;
-                }
-                ret.push_back(value);
-            }
-            else; //handle exception
+        
+        for(auto oper: operators){
+            if(oper.front() == 1) set(oper[1], oper[2], k);
+            else ret.push_back(get(oper[1]));
         }
-
+        
         return ret;
     }
 };
