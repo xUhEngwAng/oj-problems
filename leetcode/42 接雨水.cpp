@@ -1,4 +1,7 @@
+#include <vector>
 #define MIN(X, Y) ((X) < (Y)? (X): (Y))
+
+using std::vector;
 
 class Solution {
 public:
@@ -37,6 +40,28 @@ public:
         while(curr < height.size() - 1){
             ret += area(height, curr, next[curr]);
             curr = next[curr];
+        }
+
+        return ret;
+    }
+
+    // double pointer solution: O(n) time and O(1) space complexity
+    int double_pointer_trap(vector<int>& height) {
+        int left = 0, right = height.size() - 1;
+        int leftMax = height[left], rightMax = height[right];
+        int ret = 0;
+
+        while(left < right){
+            if(leftMax < rightMax){
+                ret += leftMax - height[left];
+                left += 1;
+                if(leftMax < height[left]) leftMax = height[left];
+            }
+            else{
+                ret += rightMax - height[right];
+                right -= 1;
+                if(rightMax < height[right]) rightMax = height[right];
+            }
         }
 
         return ret;
